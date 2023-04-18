@@ -14,12 +14,12 @@ import ru.costa.nasa_near_earth_objects.service.UrlService;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class Util {
-    private static final String URL ="https://api.nasa.gov/mars-photos/api/v1/rovers/curiosity/photos?sol=1000&api_key=K4WzXwpgu7KcXA8MNsq2q35K2KODztG4J73ZZkNR";
-    private static final String FILE_PATH ="C:\\Users\\costa\\Desktop\\NASA\\CURIOSITY\\";
-    private static String fileName;
+    private static final String URL = "https://api.nasa.gov/mars-photos/api/v1/rovers/curiosity/photos?sol=1000&api_key=K4WzXwpgu7KcXA8MNsq2q35K2KODztG4J73ZZkNR";
+    private static final String FILE_PATH = "C:\\Users\\costa\\Desktop\\NASA\\CURIOSITY\\";
     private static final ObjectMapper MAPPER = new ObjectMapper();
     public UrlService urlService;
 
@@ -27,9 +27,6 @@ public class Util {
     public Util(UrlService urlService) {
         this.urlService = urlService;
     }
-
-
-
 
 
     private CloseableHttpClient httpClient() {
@@ -41,16 +38,16 @@ public class Util {
                         .build())
                 .build();
     }
+
     @Bean
     private CloseableHttpResponse httpResponse() throws IOException {
-            return httpClient().execute(new HttpGet(URL));
+        return httpClient().execute(new HttpGet(URL));
     }
 
 
     public PhotoObject jsonToObject() throws IOException {
         return MAPPER.readValue(httpResponse().getEntity().getContent(), PhotoObject.class);
     }
-
 
 
     @Bean
@@ -60,9 +57,20 @@ public class Util {
         return urls;
     }
 
+
+    public List<String> getFileName() {
+        List<String> urls = urlService.getAll().stream().map(value -> value.getPhotosUrl()).collect(Collectors.toList());
+        return urls.stream().map(value -> value.split("/")).map(arr -> arr[arr.length -1]).collect(Collectors.toList());
+//        Url[] urls = urlService.getAll().toArray(Url[]::new);
+//        for (Url u : urls) {
+//            String fileName = Arrays.stream(u.getPhotosUrl().split("/")).reduce((a, b) -> b).orElse(null);
+//            System.out.println(fileName);
+//        }
+    }
+
     @Bean
     private void pasteUrlToBD() throws IOException {
-        for (String s : photosUrl()){
+        for (String s : photosUrl()) {
             if (!urlService.existsByUrl(s)) {
                 Url url = Url.builder()
                         .photosUrl(s)
@@ -73,9 +81,11 @@ public class Util {
     }
 
 
+
+
     @Bean
     private void printInfo() throws IOException {
-        for(String s : photosUrl()) {
+        for (String s : getFileName()) {
             System.out.println(s);
         }
     }

@@ -2,12 +2,14 @@ package ru.costa.nasa_near_earth_objects;
 
 import jakarta.persistence.*;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 
 @Entity
 @Table(name = "urls")
 @NoArgsConstructor
+@Getter
 @Builder
 public class Url {
     @Id
